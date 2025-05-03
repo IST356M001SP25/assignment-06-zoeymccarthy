@@ -78,7 +78,35 @@ def entity_extraction_step(sentiment: str|pd.DataFrame) -> pd.DataFrame:
     '''
       3. review_sentiment_by_sentence --> entity_extraction_step --> review_sentiment_entities_by_sentence
     '''
-    
+    if isinstance(sentiment, str):
+        sentiment_df = pd.read_csv(sentiment)
+    else:
+        sentiment_df = sentiment
+    #1. For each place in the input, call the azure entity extraction API to get the entities in the text.
+    entities = []
+    for index, row in sentiment_df.iterrows():
+        entity= get_azure_named_entity_recognition(row['sentence_text'])
+        entity_item = entity['results']['documents'][0]
+        for col in sentiment_df.columns:
+            entity_item[col] = row[col]    
+        entities.append(entity_item)
+    #2. Use json_normalize to Transform the json to be at the entities level, adding back all the columns in the input dataframe as the parent level.
+    entities_df = pd.json_normalize(entities, record_path="entities", meta=list(sentiment_df.columns))
+    #3. Rename these columns: the "text" column to "entity_text" and the "category" column to "entity_category", the "subCategory" column to "entity_subCategory", and the "confidenceScore" column to "confidenceScores.entity"
+    entities_df.rename(columns={'text': 'entity_text'}, inplace=True)
+    entities_df.rename(columns={'category': 'entity_category'}, inplace=True)
+    entities_df.rename(columns={'subcategory': 'entity_subcategory'}, inplace=True)
+    entities_df.rename(columns={'confidenceScore': 'confidenceScores.entity'}, inplace=True) 
+    print(entities_df.columns)
+
+    #4. Filter to these columns: place_id, name, author_name, rating, sentence_text, sentence_sentiment, confidenceScores.positive,confidenceScores.neutral, confidenceScores.negative, entity_text, entity_category, entity_subCategory, confidenceScores.entity
+    entities_df = entities_df[['place_id', 'name', 'author_name', 'rating', 'sentence_text', 
+                               'sentence_sentiment', 'confidenceScores.positive', 'confidenceScores.neutral', 'confidenceScores.negative', 
+                               'entity_text', 'entity_category', 'entity_subcategory', 'confidenceScores.entity']]
+    # save to cache, return dataframe
+    entities_df.to_csv(CACHE_ENTITIES_FILE, index=False, header=True)
+    return entities_df
+
 
 
 if __name__ == '__main__':
