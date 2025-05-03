@@ -1,7 +1,7 @@
 # Reflection
 
-Student Name:  name
-Sudent Email:  email
+Student Name:  Zoey McCarthy
+Sudent Email:  zpmccart@syr.edu
 
 ## Instructions
 
