@@ -23,3 +23,6 @@ Examples:
 
 `--- Reflection Below This Line ---`
 
+I think that this assignment really reinforced how to write a function that calls an api for me. Writing out every function in apicalls.py really locked the concept that you first have a url, querystring, headers, then you use get() from the response module, and raise for status, then return the result as json using the json() function. It seems more simple now that I've done it six times in this assignment on top of what we did in class. 
+
+I thought that writing three similar data pipelines in assignment_etl.py was also helpful in locking in how to write a data pipeline. I also hadn't used the isinstance() function before this assignment, so I learned a use case for that function. Writing data pipelines was novel, though it also reinforced the dataframe manipulation skills that we have been working on in class for weeks. I also got more experience on how to write csv files to my cache using this function: "to_csv(CACHE_SENTIMENT_FILE, index=False, header=True)", which I think will be useful when I'm coding my final project.
