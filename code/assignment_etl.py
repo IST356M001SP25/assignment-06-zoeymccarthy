@@ -19,7 +19,23 @@ def reviews_step(place_ids: str|pd.DataFrame) -> pd.DataFrame:
     '''
       1. place_ids --> reviews_step --> reviews: place_id, name (of place), author_name, rating, text 
     '''
-    pass # TODO: implement this function
+    if isinstance(place_ids, str):
+        place_ids_df = pd.read_csv(place_ids)
+    else:
+        place_ids_df = place_ids
+    #1. For each place in the input, call the google places API to get the place details and reviews. 
+    google_places = []
+    for index, row in place_ids_df.iterrows():
+        place = get_google_place_details(row['Google Place ID'])
+        #Make a Python list of dict where each dict is under the ['result'] key of the response from the API call.
+        google_places.append(place['result'])
+    #2. Use json_normalize to Transform the json to be at the 'reviews' level, adding back the place_id, name from the parent level. 
+    reviews_df = pd.json_normalize(google_places, record_path="reviews", meta=["place_id", 'name'])
+    #3. Filter dataframe to these columns: place_id, name (of place), author_name, rating, text
+    reviews_df = reviews_df[['place_id', 'name',  'author_name', 'rating', 'text']]
+    #save df to cache, return df
+    reviews_df.to_csv(CACHE_REVIEWS_FILE, index=False, header=True)
+    return reviews_df      
 
 def sentiment_step(reviews: str|pd.DataFrame) -> pd.DataFrame:
     '''
